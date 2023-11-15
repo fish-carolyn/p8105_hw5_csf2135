@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(rvest)
+library(purrr)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -82,25 +83,44 @@ knitr::kable(df_city_state_unsolved, format = "markdown")
 **For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.**
 
 ```{r,warning=FALSE, message=FALSE}
-
-MD_unsolved_homicides <- df_city_state_unsolved  |> 
-                                filter(city_state == "Baltimore, MD")  |> 
+prop_unsolved = function(x) {
+  
+  if (is.na(x)) {
+    stop("missing city name")
+  } 
+  
+    state_unsolved_homicides <- df_city_state_unsolved  |> 
+                                filter(city_state == x)  |> 
                                 pull(unsolved_homicides)
 
-MD_total_homicides <- df_city_state_unsolved  |> 
-                                filter(city_state == "Baltimore, MD")  |> 
+    state_total_homicides <- df_city_state_unsolved  |> 
+                                filter(city_state == x)  |> 
                                 pull(total_homicides)
                                 
 
-MD_homicide_prop <- prop.test(MD_unsolved_homicides, MD_total_homicides) |> 
-  broom::tidy() |>
-  select(estimate, `conf.high`, `conf.low`) 
+    state_homicide_prop <- prop.test(state_unsolved_homicides, state_total_homicides) |> 
+       broom::tidy() |>
+       mutate(city_state = paste(x)) |> 
+       select(city_state, estimate, `conf.high`, `conf.low`)
+       
+    
+    return(state_homicide_prop)
+}
 
-knitr::kable(MD_homicide_prop, format = "markdown")
+prop_unsolved("Baltimore, MD") |> 
+  knitr::kable(format = "markdown")
 ```
 
+**Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each. Do this within a “tidy” pipeline, making use of purrr::map, purrr::map2, list columns and unnest as necessary to create a tidy dataframe with estimated proportions and CIs for each city.**
 
-Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each. Do this within a “tidy” pipeline, making use of purrr::map, purrr::map2, list columns and unnest as necessary to create a tidy dataframe with estimated proportions and CIs for each city.
+```{r}
+cities <- as.vector(df_city_state_unsolved |> pull(city_state) |> unique())
+
+df_prop_unsolved <- map_dfr(cities, prop_unsolved) 
+
+knitr::kable(df_prop_unsolved)
+```
+
 
 Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
 
