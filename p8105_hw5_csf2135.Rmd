@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 	echo = TRUE,
 	warning = FALSE,
 	fig.width = 8, 
-  fig.height = 6,
+  fig.height = 9,
   out.width = "90%"
 )
 
@@ -108,7 +108,7 @@ prop_unsolved = function(x) {
 }
 
 prop_unsolved("Baltimore, MD") |> 
-  knitr::kable(format = "markdown")
+  knitr::kable(format = "markdown", digits = 2)
 ```
 
 **Now run prop.test for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each. Do this within a “tidy” pipeline, making use of purrr::map, purrr::map2, list columns and unnest as necessary to create a tidy dataframe with estimated proportions and CIs for each city.**
@@ -118,15 +118,33 @@ cities <- as.vector(df_city_state_unsolved |> pull(city_state) |> unique())
 
 df_prop_unsolved <- map_dfr(cities, prop_unsolved) 
 
-knitr::kable(df_prop_unsolved)
+knitr::kable(df_prop_unsolved, digits = 2)
+```
+
+**Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.**
+
+```{r}
+df_prop_unsolved  |> 
+  arrange(estimate) |> 
+  ggplot(aes(x = reorder(city_state, estimate), y = estimate, color = estimate)) +
+    geom_point(size = 2) +
+    scale_color_viridis_c(option = "turbo") +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2, alpha = 0.5) +
+    labs(x = "City", y = "Proportion of Unsolved Homicides") +
+    coord_flip() + 
+    theme(
+      panel.background = element_rect(fill = "grey95"), 
+      axis.title = element_text(color = "black", size = 14), 
+      axis.text = element_text(color = "black", size = 11)
+    )
 ```
 
 
-Create a plot that shows the estimates and CIs for each city – check out geom_errorbar for a way to add error bars based on the upper and lower limits. Organize cities according to the proportion of unsolved homicides.
-
 ### Problem 2
 
-This zip file contains data from a longitudinal study that included a control arm and an experimental arm. Data for each participant is included in a separate file, and file names include the subject ID and arm.
+This zip file contains data from a longitudinal study that included a control arm and an experimental arm. Data for each participant is included in a separate file, and file names include the subject ID and arm.anel.grid.minor = element_blank(),  # Remove minor grid lines
+    axis.text = element_text(color = "white")  # Set axis text color
+  )
 
 Create a tidy dataframe containing data from all participants, including the subject ID, arm, and observations over time:
 
