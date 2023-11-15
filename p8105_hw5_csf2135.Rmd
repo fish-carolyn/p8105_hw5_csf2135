@@ -9,7 +9,24 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(rvest)
-library(httr)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
 
 Your solutions to Problems 1, 2, and 3 should be implemented in your .Rmd file, and your git commit history should reflect the process you used to solve these Problems.
@@ -25,7 +42,6 @@ The Washington Post has gathered data on homicides in 50 large U.S. cities and m
 ```{r, warning=FALSE, results='hide', message=FALSE}
 url = "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"
 
-
 df_homicides = read_csv(url(url))
 
 df_homicides |> head()
@@ -38,10 +54,27 @@ skimr::skim(df_homicides)
 The raw data includes variables for the victim's first and last name, demographic information (sex, race, age). Each homicide has a unique identifier (`uid`) and the date the incident was reported,  the incident location (city, state, latitude, longitude), and case status (`disposition`) are provided. 
 
 
-There are `r nrow(df_homicides)` observations in the data and `r ncol(df_homicides)` variables in the raw data set. 
+There are `r nrow(df_homicides)` observations in the data and `r ncol(df_homicides)` variables in the raw data set. Most data is non-missing, except for `r df_homicides |> filter(is.na(lat)) |> count()` instances where latitude/longitude data is missing. There are `r df_homicides |> select(uid) |> unique() |> count()` unique incidents described in the data occurring in `r df_homicides |> select(city) |> unique() |> count()` unique cities across the US. 
 
 
-Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
+**Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).**
+
+```{r, warning=FALSE, message=FALSE}
+
+df_homicides <- df_homicides |> 
+  mutate(city_state = paste(city, state, sep = ", "))
+
+  df_homicides |> 
+  group_by(city_state) |> 
+  mutate(total_homicides = n()) |>  
+  filter(disposition == "Closed without arrest" | disposition == "Open/No arrest") |> 
+  mutate(unsolved_homicides = n()) |>  
+  select(city_state, total_homicides, unsolved_homicides) |> 
+  unique() |> 
+  knitr::kable(format = "markdown")
+
+```
+
 
 For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
 
