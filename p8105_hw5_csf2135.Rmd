@@ -159,7 +159,7 @@ ggsave(plot_save_path, plot_unsolved, device = "png", width = 8, height = 9, uni
 * Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
 
 
-```{r}
+```{r, message=FALSE, results='hide', warning=FALSE}
 path_p2_data <- "problem2_data"
 
 p2_csv_files <- list.files(path_p2_data, pattern = "\\.csv$", full.names = TRUE)
@@ -184,7 +184,7 @@ df_p2_all <- bind_rows(p2_data_frames) |>
 
 Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.
 
-```{r}
+```{r, message= FALSE, warning=FALSE}
 plot_trial<- df_p2_all  |> 
   mutate(
     subject_arm_group = paste(subject_id, arm, sep = "_")) |> 
@@ -204,10 +204,7 @@ plot_trial
 
 plot_save_path2 <- "hw5_plots/trial_weekly_estimates.png"
 
-ggsave(plot_save_path2, plot_trial, device = "png", width = 8, height = 9, units = "in", dpi = 300)
-
-  
-  
+ggsave(plot_save_path2, plot_trial, device = "png", width = 8, height = 6, units = "in", dpi = 300)
 ```
 
 
