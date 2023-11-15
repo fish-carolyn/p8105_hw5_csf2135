@@ -6,6 +6,10 @@ date: "`r Sys.Date()`"
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(rvest)
+library(httr)
 ```
 
 Your solutions to Problems 1, 2, and 3 should be implemented in your .Rmd file, and your git commit history should reflect the process you used to solve these Problems.
@@ -18,7 +22,26 @@ This homework includes figures; the readability of your embedded plots (e.g. fon
 
 The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
 
-Describe the raw data. Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
+```{r, warning=FALSE, results='hide', message=FALSE}
+url = "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"
+
+
+df_homicides = read_csv(url(url))
+
+df_homicides |> head()
+
+skimr::skim(df_homicides)
+
+```
+**Describe the raw data.**
+
+The raw data includes variables for the victim's first and last name, demographic information (sex, race, age). Each homicide has a unique identifier (`uid`) and the date the incident was reported,  the incident location (city, state, latitude, longitude), and case status (`disposition`) are provided. 
+
+
+There are `r nrow(df_homicides)` observations in the data and `r ncol(df_homicides)` variables in the raw data set. 
+
+
+Create a city_state variable (e.g. “Baltimore, MD”) and then summarize within cities to obtain the total number of homicides and the number of unsolved homicides (those for which the disposition is “Closed without arrest” or “Open/No arrest”).
 
 For the city of Baltimore, MD, use the prop.test function to estimate the proportion of homicides that are unsolved; save the output of prop.test as an R object, apply the broom::tidy to this object and pull the estimated proportion and confidence intervals from the resulting tidy dataframe.
 
