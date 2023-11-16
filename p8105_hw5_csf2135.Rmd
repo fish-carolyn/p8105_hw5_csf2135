@@ -236,10 +236,10 @@ num_datasets <- as.vector(1:5000)
 generate_datasets <- function(x) {
   dataset <- rnorm(n, mean = mu, sd = sigma)
   
-  t_test_result <- t.test(dataset, mu = mu) |> 
+  t_test_result <- t.test(dataset, mu = mu, conf.level = 0.95) |> 
     broom::tidy() |> 
     mutate(iteration = paste(x)) |> 
-    select(iteration, estimate, `conf.high`, `conf.low`)
+    select(iteration, estimate, `p.value`)
 
   return(t_test_result)
 }
@@ -248,39 +248,112 @@ df_mu_zero_norm <- map_dfr(num_datasets, generate_datasets)
 ```
 
 **Repeat the above for μ={1,2,3,4,5,6}, and complete the following:**
-
 ```{r}
 mu_list <- as.vector(0:6)
 
-generate_datasets <- function(x) {
+generate_datasets <- function(n, mu, sigma, x) {
   dataset <- rnorm(n, mean = mu, sd = sigma)
   
-  t_test_result <- t.test(dataset, mu = mu) |> 
-    broom::tidy() |> 
-    mutate(iteration = paste(x)) |> 
-    select(iteration, estimate, `conf.high`, `conf.low`)
+  t_test_result <- t.test(dataset, mu = 0) %>%
+    broom::tidy() %>%
+    mutate(iteration = x) %>%
+    select(iteration, estimate, `p.value`)
 
   return(t_test_result)
 }
 
-dist_diff_mu <- function(x) {
-  
+dist_diff_mu <- function(mu) {
   n <- 30
   sigma <- 5
-  mu <- x
-  
   num_datasets <- as.vector(1:5000)
 
-  results <- map_dfr(num_datasets, generate_datasets) |> 
-    mutate(mu_test = paste(x))
+  results <- map_dfr(num_datasets, ~generate_datasets(n, mu, sigma, .x)) %>%
+    mutate(mu_test = paste(mu))
 
   return(results)
 }
 
-df_changing_mu_norm <- map_dfr(mu_list, dist_diff_mu) 
+df_changing_mu_norm <- map_dfr(mu_list, dist_diff_mu)
 ```
 
+*Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. Describe the association between effect size and power.*
+```{r, message= FALSE, warning=FALSE}
+perc_reject <- df_changing_mu_norm |> 
+  group_by(mu_test) |> 
+  filter(`p.value` < 0.05) |> 
+  summarise(total_tests = n()) |> 
+  mutate(perc_reject = total_tests / 5000) |> 
+  arrange(mu_test) |> 
+  ungroup() |> 
+  ggplot(aes(x= as.numeric(mu_test), y= perc_reject)) +
+    geom_point(color = "orange") +
+    geom_smooth(se=FALSE, color= "orange1") +
+    labs(title = "Power by true value of μ", x = "True value of μ", y = "Proportion H0 rejected") +
+      theme(
+        panel.background = element_rect(fill = "grey95"), 
+        axis.title = element_text(color = "black", size = 14), 
+        axis.text = element_text(color = "black", size = 11), 
+        title = element_text(color = "black", size = 18), 
+        legend.text = element_text(color = "black", size = 11))
+  
+perc_reject
 
-* Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. Describe the association between effect size and power.
-* Make a plot showing the average estimate of μ̂ on the y axis and the true value of μ on the x axis. Make a second plot (or overlay on the first) the average estimate of μ̂ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂ across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
+plot_save_path3 <- "hw5_plots/perc_null_reject.png"
+
+ggsave(plot_save_path3, perc_reject, device = "png", width = 8, height = 6, units = "in", dpi = 300)
+```
+
+Looking at the proportion of times the null was rejected (power) by ascending true effect estimates, we can see that the larger the effect size the more power the analysis of the association with have. When effect size is larger, the risk of rejecting the null when the null is true decreases. 
+
+*Make a plot showing the average estimate of μ̂ on the y axis and the true value of μ on the x axis.*
+```{r, message= FALSE, warning=FALSE}
+estimate_true <- df_changing_mu_norm |> 
+  group_by(mu_test) |> 
+  mutate(average_estimate = mean(estimate)) |> 
+  arrange(mu_test) |> 
+  ungroup() |>
+  ggplot(aes(x= as.numeric(mu_test), y= average_estimate)) +
+    geom_point(color = "orange") +
+    geom_smooth(method = "lm", se=FALSE, color= "orange1") +
+    labs(title = "Average estimate of population μ by true μ ", x = "True value of μ", y = "Average estimate of μ") +
+      theme(
+        panel.background = element_rect(fill = "grey95"), 
+        axis.title = element_text(color = "black", size = 14), 
+        axis.text = element_text(color = "black", size = 11), 
+        title = element_text(color = "black", size = 18), 
+        legend.text = element_text(color = "black", size = 11))
+  
+estimate_true
+
+plot_save_path4 <- "hw5_plots/estimated_true_corr.png"
+
+ggsave(plot_save_path4, estimate_true, device = "png", width = 8, height = 6, units = "in", dpi = 300)
+```
+Given the large sample size, the average estimate of the effect size is well correlated to the true value of the effect size (orange)
+
+*Make a second plot (or overlay on the first) the average estimate of μ̂ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂ across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?*
+```{r, message= FALSE, warning=FALSE}
+df_estimate_true_reject <- df_changing_mu_norm |> 
+  group_by(mu_test) |> 
+  filter(`p.value` < 0.05) |> 
+  mutate(average_estimate = mean(estimate)) |> 
+  arrange(mu_test) |> 
+  ungroup()
+
+estimate_true_reject <- estimate_true + 
+    geom_point(data= df_estimate_true_reject, aes(x= as.numeric(mu_test), y= average_estimate), 
+               color = "green4") +
+    geom_smooth(data= df_estimate_true_reject, aes(x= as.numeric(mu_test), y= average_estimate), 
+                method = "lm", se=FALSE, color= "green4") 
+
+estimate_true_reject
+
+plot_save_path5 <- "hw5_plots/estimated_true_reject.png"
+
+ggsave(plot_save_path5, estimate_true_reject, device = "png", width = 8, height = 6, units = "in", dpi = 300)
+```
+The average estimates for when the null is rejected (green) show more deviation from the true value of μ (orange) as the effect size decreases. The "significant" estimates more closely approximate the true value when the effect size is greater (>3). 
+
+
+
 
