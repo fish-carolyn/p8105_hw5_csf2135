@@ -146,7 +146,7 @@ df_p2_all <- bind_rows(p2_data_frames) |>
 
 **Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.**
 
-```{r, message= FALSE, warning=FALSE, echo = TRUE, fig.width = 4, fig.height = 5}
+```{r, message= FALSE, warning=FALSE, echo = TRUE, fig.width = 6, fig.height = 5}
 plot_trial<- df_p2_all  |> 
   mutate(
     subject_arm_group = paste(subject_id, arm, sep = "_")) |> 
@@ -227,7 +227,7 @@ df_changing_mu_norm <- map_dfr(mu_list, dist_diff_mu)
 ```
 
 **Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. Describe the association between effect size and power.**
-```{r, message= FALSE, warning=FALSE, echo = TRUE, fig.width = 4, fig.height = 5}
+```{r, message= FALSE, warning=FALSE, echo = TRUE, fig.width = 5, fig.height = 5}
 perc_reject <- df_changing_mu_norm |> 
   group_by(mu_test) |> 
   filter(`p.value` < 0.05) |> 
@@ -258,7 +258,7 @@ Looking at the proportion of times the null was rejected (power) by ascending tr
 
 
 **Make a plot showing the average estimate of μ̂ on the y axis and the true value of μ on the x axis.**
-```{r, message= FALSE, warning=FALSE, echo = TRUE, fig.width = 4, fig.height = 5}
+```{r, message= FALSE, warning=FALSE, echo = TRUE, fig.width = 5, fig.height = 5}
 estimate_true <- df_changing_mu_norm |> 
   group_by(mu_test) |> 
   mutate(average_estimate = mean(estimate)) |> 
@@ -287,7 +287,7 @@ Given the large sample size, the average estimate of the effect size is well cor
 
 
 **Make a second plot (or overlay on the first) the average estimate of μ̂ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂ across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?**
-```{r, message= FALSE, warning=FALSE, echo = TRUE, fig.width = 4, fig.height = 5}
+```{r, message= FALSE, warning=FALSE, echo = TRUE, fig.width = 5, fig.height = 5}
 df_estimate_true_reject <- df_changing_mu_norm |> 
   group_by(mu_test) |> 
   filter(`p.value` < 0.05) |> 
