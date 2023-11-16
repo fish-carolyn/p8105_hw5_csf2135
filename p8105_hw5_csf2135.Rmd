@@ -113,7 +113,8 @@ plot_unsolved<- df_prop_unsolved  |>
       axis.title = element_text(color = "black", size = 14), 
       axis.text = element_text(color = "black", size = 11), 
       title = element_text(color = "black", size = 18)
-    ) 
+    ) +
+  theme_bw()
 
 plot_unsolved
 
@@ -166,7 +167,8 @@ plot_trial<- df_p2_all  |>
       axis.title = element_text(color = "black", size = 14), 
       axis.text = element_text(color = "black", size = 11), 
       title = element_text(color = "black", size = 18), 
-      legend.text = element_text(color = "black", size = 11))
+      legend.text = element_text(color = "black", size = 11))+
+  theme_bw()
 
 plot_trial
 
@@ -250,7 +252,8 @@ perc_reject <- df_changing_mu_norm |>
         axis.title = element_text(color = "black", size = 14), 
         axis.text = element_text(color = "black", size = 11), 
         title = element_text(color = "black", size = 18), 
-        legend.text = element_text(color = "black", size = 11))
+        legend.text = element_text(color = "black", size = 11))+
+  theme_bw()
   
 perc_reject
 
@@ -278,7 +281,8 @@ estimate_true <- df_changing_mu_norm |>
         axis.title = element_text(color = "black", size = 14), 
         axis.text = element_text(color = "black", size = 11), 
         title = element_text(color = "black", size = 18), 
-        legend.text = element_text(color = "black", size = 11))
+        legend.text = element_text(color = "black", size = 11))+
+  theme_bw()
   
 estimate_true
 
