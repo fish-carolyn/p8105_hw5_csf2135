@@ -19,11 +19,10 @@ knitr::opts_chunk$set(
   out.width = "90%"
 )
 ```
+
 ### Problem 1
 
-The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.
-
-
+**The Washington Post has gathered data on homicides in 50 large U.S. cities and made the data available through a GitHub repository here. You can read their accompanying article here.**
 ```{r, warning=FALSE, results='hide', message=FALSE}
 url = "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"
 
@@ -123,7 +122,7 @@ plot_save_path <- "hw5_plots/prop_unsolved_by_state.png"
 ggsave(plot_save_path, plot_unsolved, device = "png", width = 8, height = 9, units = "in", dpi = 300)
 
 ```
----
+
 ### Problem 2
 
 **This zip file contains data from a longitudinal study that included a control arm and an experimental arm. Data for each participant is included in a separate file, and file names include the subject ID and arm.**
@@ -152,7 +151,6 @@ df_p2_all <- bind_rows(p2_data_frames) |>
 
 ```
 
-
 **Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.**
 
 ```{r, message= FALSE, warning=FALSE}
@@ -177,12 +175,9 @@ plot_save_path2 <- "hw5_plots/trial_weekly_estimates.png"
 ggsave(plot_save_path2, plot_trial, device = "png", width = 8, height = 6, units = "in", dpi = 300)
 ```
 
-
 Over the length of the study period, the experimental group (red) consistently has higher estimates after week 2 compared to the control group. The experimental group demostrates a positive trend overtime while the control group shows a fairly flat, unchanging trendline from week 1 to week 8. 
 
----
 ### Problem 3
-
 
 **When designing an experiment or analysis, a common question is whether it is likely that a true effect will be detected – put differently, whether a false null hypothesis will be rejected. In this problem, you will conduct a simulation to explore power in a one-sample t-test.**
 
@@ -207,7 +202,6 @@ generate_datasets <- function(x) {
 
 df_mu_zero_norm <- map_dfr(num_datasets, generate_datasets) 
 ```
-
 
 **Repeat the above for μ={1,2,3,4,5,6}, and complete the following:**
 ```{r}
@@ -238,7 +232,6 @@ dist_diff_mu <- function(mu) {
 df_changing_mu_norm <- map_dfr(mu_list, dist_diff_mu)
 ```
 
-
 **Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis. Describe the association between effect size and power.**
 ```{r, message= FALSE, warning=FALSE}
 perc_reject <- df_changing_mu_norm |> 
@@ -266,9 +259,7 @@ plot_save_path3 <- "hw5_plots/perc_null_reject.png"
 ggsave(plot_save_path3, perc_reject, device = "png", width = 8, height = 6, units = "in", dpi = 300)
 ```
 
-
 Looking at the proportion of times the null was rejected (power) by ascending true effect estimates, we can see that the larger the effect size the more power the analysis of the association with have. When effect size is larger, the risk of rejecting the null when the null is true decreases. 
-
 
 
 **Make a plot showing the average estimate of μ̂ on the y axis and the true value of μ on the x axis.**
@@ -296,9 +287,7 @@ plot_save_path4 <- "hw5_plots/estimated_true_corr.png"
 ggsave(plot_save_path4, estimate_true, device = "png", width = 8, height = 6, units = "in", dpi = 300)
 ```
 
-
 Given the large sample size, the average estimate of the effect size is well correlated to the true value of the effect size (orange).
-
 
 
 **Make a second plot (or overlay on the first) the average estimate of μ̂ only in samples for which the null was rejected on the y axis and the true value of μ on the x axis. Is the sample average of μ̂ across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?**
@@ -322,7 +311,6 @@ plot_save_path5 <- "hw5_plots/estimated_true_reject.png"
 
 ggsave(plot_save_path5, estimate_true_reject, device = "png", width = 8, height = 6, units = "in", dpi = 300)
 ```
-
 
 The average estimates for when the null is rejected (green) show more deviation from the true value of μ (orange) as the effect size decreases. The "significant" estimates more closely approximate the true value when the effect size is greater (>3). 
 
